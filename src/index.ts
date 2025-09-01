@@ -1,4 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { prettyJSON } from 'hono/pretty-json';
 import type { Bindings } from '@/lib/env';
 import { HttpStatus, toAppError } from '@/lib/errors';
 import {
@@ -12,13 +13,8 @@ import { createUser, getUser, listUsers } from './services/example.service';
 
 export const app = new OpenAPIHono<{ Bindings: Bindings }>();
 
-// attach the app instance so openapi routes can delegate
-app.use(async (c, next) => {
-  c.env.APP = app;
-  await next();
-});
-
 // core middleware
+app.use(prettyJSON());
 // TODO: to implement: logging, rate limiting, cors, request id, etc.
 
 // routes
