@@ -33,7 +33,7 @@ lerna-debug.log*
 fyai.txt
 
 # todo
-todo.txt
+todo.json
 
 # misc
 .DS_Store
