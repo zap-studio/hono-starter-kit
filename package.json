@@ -6,16 +6,21 @@
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "lint": "ultracite lint",
-    "format": "ultracite format"
+    "format": "ultracite format",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "hono": "^4.9.5"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.2",
+    "@cloudflare/vitest-pool-workers": "^0.8.68",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "ultracite": "5.2.17",
+    "vitest": "^3.2.4",
     "wrangler": "^4.33.1"
   },
   "lint-staged": {
