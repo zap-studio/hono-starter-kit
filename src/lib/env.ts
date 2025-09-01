@@ -14,6 +14,6 @@ export type Bindings = {
   NODE_ENV?: string;
   RATE_LIMIT_POINTS?: number;
   RATE_LIMIT_DURATION?: number;
-  CORS_ORIGIN?: string;
+  CORS_ORIGINS?: string[];
   // Add other bindings, e.g. MY_KV?: KVNamespace;
 };

@@ -1,5 +1,14 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
+import type { Context } from 'hono';
+import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
+import { logger } from 'hono/logger';
+import { poweredBy } from 'hono/powered-by';
 import { prettyJSON } from 'hono/pretty-json';
+import type { RequestIdVariables } from 'hono/request-id';
+import { requestId } from 'hono/request-id';
+import { secureHeaders } from 'hono/secure-headers';
+import { timeout } from 'hono/timeout';
 import type { Bindings } from '@/lib/env';
 import { HttpStatus, toAppError } from '@/lib/errors';
 import {
@@ -11,14 +20,48 @@ import { health } from '@/routes/health.route';
 import { sendError } from '@/utils/response';
 import { createUser, getUser, listUsers } from './services/example.service';
 
-export const app = new OpenAPIHono<{ Bindings: Bindings }>();
+export const app = new OpenAPIHono<{
+  Bindings: Bindings;
+  Variables: RequestIdVariables;
+}>();
 
-// core middleware
-app.use(prettyJSON());
-// TODO: to implement: logging, rate limiting, cors, request id, etc.
+// custom exceptions
+const TIMEOUT_IN_MS = 300_000; // 5 minutes
+const customTimeoutException = (context: Context) =>
+  new HTTPException(HttpStatus.REQUEST_TIMEOUT, {
+    message: `Request timeout after waiting ${context.req.header('Duration')} seconds. Please try again later.`,
+  });
+
+// core middlewares
+const SERVER_NAME = 'Zap Studio';
+const CORS_MAX_AGE_SECONDS = 600;
+const CORS_DEFAULT_ORIGIN = '*';
+
+app.use(poweredBy({ serverName: SERVER_NAME }));
+app.use('*', secureHeaders());
+app.use('*', requestId());
+app.use('*', logger());
+app.use('*', (c, next) => {
+  const corsMiddlewareHandler = cors({
+    origin: c.env.CORS_ORIGINS || CORS_DEFAULT_ORIGIN,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    maxAge: CORS_MAX_AGE_SECONDS,
+    credentials: true,
+  });
+  return corsMiddlewareHandler(c, next);
+});
+app.use('*', prettyJSON());
+app.use('*', timeout(TIMEOUT_IN_MS, customTimeoutException));
+
+// API routes
+const api = new OpenAPIHono<{
+  Bindings: Bindings;
+  Variables: RequestIdVariables;
+}>();
 
 // routes
-app.openapi(health, (c) => {
+api.openapi(health, (c) => {
   return c.json(
     {
       ok: true,
@@ -28,11 +71,11 @@ app.openapi(health, (c) => {
   );
 });
 
-app.openapi(listUsersRoute, (c) => {
+api.openapi(listUsersRoute, (c) => {
   return c.json({ ok: true, data: listUsers() }, HttpStatus.OK);
 });
 
-app.openapi(getUserRoute, (c) => {
+api.openapi(getUserRoute, (c) => {
   const { id } = c.req.valid('param');
   const user = getUser(id);
   if (!user) {
@@ -41,7 +84,7 @@ app.openapi(getUserRoute, (c) => {
   return c.json({ ok: true, data: user }, HttpStatus.OK);
 });
 
-app.openapi(createUserRoute, (c) => {
+api.openapi(createUserRoute, (c) => {
   const input = c.req.valid('json');
   try {
     const user = createUser(input);
@@ -54,12 +97,22 @@ app.openapi(createUserRoute, (c) => {
   }
 });
 
+// Set API prefix and version
+const PREFIX = '/api';
+const VERSION = '/v1';
+app.route(`${PREFIX}${VERSION}`, api);
+
 // OpenAPI documentation
-app.doc('/doc', {
-  openapi: '3.0.0',
+const OPENAPI_DOC_ROUTE = '/doc';
+const OPENAPI_VERSION = '3.0.0';
+const API_VERSION = '1.0.0';
+const API_NAME = 'Zap Studio';
+
+app.doc(OPENAPI_DOC_ROUTE, {
+  openapi: OPENAPI_VERSION,
   info: {
-    version: '1.0.0',
-    title: 'My API',
+    version: API_VERSION,
+    title: API_NAME,
   },
 });
 
