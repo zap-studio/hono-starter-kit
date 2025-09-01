@@ -29,5 +29,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# fyai
+fyai.txt
+
+# todo
+todo.txt
+
 # misc
 .DS_Store
