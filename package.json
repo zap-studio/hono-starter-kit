@@ -12,11 +12,15 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@hono/zod-openapi": "^1.1.0",
+    "@hono/zod-validator": "^0.7.2",
     "hono": "^4.9.5"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.2",
     "@cloudflare/vitest-pool-workers": "^0.8.68",
+    "@cloudflare/workers-types": "^4.20250831.0",
+    "@types/node": "^24.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "ultracite": "5.2.17",
