@@ -1,21 +1,90 @@
-```txt
-npm install
-npm run dev
+# Hono Starter Kit
+
+> A modern, type-safe starter template for building Cloudflare Workers APIs with [Hono](https://hono.dev/).
+
+## Features
+
+- ⚡️ Fast, minimal API routing with Hono
+- 🦺 Strict type safety (Cloudflare Bindings)
+- 🧩 Modular structure: routes, services, schemas, middlewares, utils
+- 🛠️ Biome for formatting & linting
+- 🧪 Vitest for testing
+- 🚀 Ready for local dev & Cloudflare deployment
+
+## Getting Started
+
+### 1. Install dependencies
+
+```sh
+bun install
 ```
 
-```txt
-npm run deploy
+### 2. Start local development
+
+```sh
+bun run dev
 ```
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+### 3. Deploy to Cloudflare
 
-```txt
-npm run cf-typegen
+```sh
+bun run deploy
 ```
 
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
+### 4. Generate Cloudflare types
+
+To sync types from your Worker configuration:
+
+```sh
+bun run cf-typegen
+```
+
+## Usage
+
+When creating your Hono app, pass the Cloudflare bindings for full type safety:
 
 ```ts
 // src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
+const app = new Hono<{ Bindings: CloudflareBindings }>();
 ```
+
+## Project Structure
+
+```
+src/
+  index.ts                # Entry point
+  lib/                    # Core utilities (env, errors)
+  middlewares/            # Custom middlewares
+  routes/                 # API route definitions
+  schemas/                # Validation schemas
+  services/               # Business logic
+  utils/                  # Helpers (response formatting)
+```
+
+## Scripts
+
+- `bun run dev` — Start local dev server
+- `bun run deploy` — Deploy to Cloudflare
+- `bun run cf-typegen` — Generate/sync Cloudflare types
+
+## Linting & Formatting
+
+Uses [Biome](https://biomejs.dev/) with [Ultracite](https://ultracite.ai/) for code quality:
+
+```sh
+ultracite lint      # Check for issues
+ultracite format    # Auto-fix & format
+```
+
+## Testing
+
+Run unit tests with Vitest:
+
+```sh
+bun run test
+```
+
+## Resources
+
+- [Hono Documentation](https://hono.dev/)
+- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
