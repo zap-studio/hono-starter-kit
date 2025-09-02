@@ -58,13 +58,24 @@ const app = new OpenAPIHono<{
 
 ```
 src/
-  index.ts                # Entry point
-  lib/                    # Core utilities (env, errors)
-  middlewares/            # Custom middlewares
-  routes/                 # API route definitions
-  schemas/                # Validation schemas
-  services/               # Business logic
-  utils/                  # Helpers (response formatting)
+  index.ts                # App entry point
+  lib/
+    env.ts                # Environment variable helpers
+  routes/
+    example.route.ts      # Example API route
+    health.route.ts       # Health check route
+  schemas/
+    example.schema.ts     # Example validation schema
+    health.schema.ts      # Health check schema
+  services/
+    example.service.ts    # Example business logic
+  zap/
+    middlewares/
+      custom-cors.ts      # Custom CORS middleware
+    utils/
+      http.ts             # HTTP helpers
+      parsing.ts          # Parsing utilities
+      response.ts         # Response formatting
 ```
 
 ## Scripts
