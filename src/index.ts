@@ -8,8 +8,6 @@ import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
 import { timeout } from 'hono/timeout';
 import type { Bindings } from '@/lib/env';
-import { AppError, HttpStatus, toAppError } from '@/lib/errors';
-import { customCors } from '@/middlewares/custom-cors';
 import {
   createUserRoute,
   getUserRoute,
@@ -17,7 +15,9 @@ import {
 } from '@/routes/example.route';
 import { health } from '@/routes/health.route';
 import { createUser, getUser, listUsers } from '@/services/example.service';
-import { send, sendError } from '@/utils/response';
+import { customCors } from '@/zap/middlewares/custom-cors';
+import { HttpStatus } from '@/zap/utils/errors';
+import { sendJson } from '@/zap/utils/response';
 
 export const app = new OpenAPIHono<{
   Bindings: Bindings;
@@ -42,23 +42,22 @@ app.use(customCors());
 app.use(prettyJSON());
 app.use(timeout(TIMEOUT_IN_MS, customTimeoutException));
 
-// API routes
-
+// base route
 app.get('/', (c) => {
-  return send(
+  return sendJson(
     c,
     { message: 'Welcome to hono-starter-kit by Zap Studio!' },
     HttpStatus.OK
   );
 });
 
+// API routes
 const PREFIX = '/api';
 const VERSION = '/v1';
 const api = app.basePath(`${PREFIX}${VERSION}`);
 
-// routes
 api.openapi(health, (c) => {
-  return send(
+  return sendJson(
     c,
     { status: 'ok', timestamp: Date.now(), version: API_VERSION },
     HttpStatus.OK
@@ -82,7 +81,7 @@ api.openapi(listUsersRoute, (c) => {
   const start = (pageNum - 1) * limitNum;
   const paginated = users.slice(start, start + limitNum);
 
-  return send(c, paginated, HttpStatus.OK, {
+  return sendJson(c, paginated, HttpStatus.OK, {
     total,
     page: pageNum,
     limit: limitNum,
@@ -93,22 +92,17 @@ api.openapi(getUserRoute, (c) => {
   const { id } = c.req.valid('param');
   const user = getUser(id);
   if (!user) {
-    return sendError(c, toAppError(AppError.notFound('User not found')));
+    throw new HTTPException(HttpStatus.NOT_FOUND, {
+      message: 'User not found',
+    });
   }
-  return send(c, user, HttpStatus.OK);
+  return sendJson(c, user, HttpStatus.OK);
 });
 
 api.openapi(createUserRoute, (c) => {
   const input = c.req.valid('json');
-  try {
-    const user = createUser(input);
-    return send(c, user, HttpStatus.CREATED);
-  } catch (error) {
-    return sendError(
-      c,
-      toAppError(AppError.badRequest((error as Error).message))
-    );
-  }
+  const user = createUser(input);
+  return sendJson(c, user, HttpStatus.CREATED);
 });
 
 // OpenAPI documentation
@@ -127,13 +121,20 @@ app.doc(OPENAPI_DOC_ROUTE, {
 
 // not found
 app.notFound((c) => {
-  return sendError(c, toAppError(new Error('Not Found')));
+  return sendJson(c, { message: 'Not Found' }, HttpStatus.NOT_FOUND);
 });
 
 // global error handler
 app.onError((err, c) => {
-  const e = toAppError(err);
-  return sendError(c, e);
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+
+  return sendJson(
+    c,
+    { message: 'Internal Server Error' },
+    HttpStatus.INTERNAL_SERVER_ERROR
+  );
 });
 
 export type App = typeof app;
