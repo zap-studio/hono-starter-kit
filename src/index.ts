@@ -1,5 +1,4 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
-import type { Context } from 'hono';
 import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
@@ -27,7 +26,10 @@ export const app = new OpenAPIHono<{
 
 // custom exceptions
 const TIMEOUT_IN_MS = 300_000; // 5 minutes
-    message: `Request timeout after waiting ${TIMEOUT_IN_MS / 1000} seconds. Please try again later.`,
+const SECONDS_IN_MS = 1000;
+const customTimeoutException = () =>
+  new HTTPException(HttpStatus.REQUEST_TIMEOUT, {
+    message: `Request timeout after waiting ${TIMEOUT_IN_MS / SECONDS_IN_MS} seconds. Please try again later.`,
   });
 
 // core middlewares
