@@ -1,5 +1,6 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import { HttpStatus } from './http';
 
 /**
  * Represents a successful API response.
@@ -46,11 +47,10 @@ export type ApiSuccess<T> = {
  *   },
  * }
  */
-export function sendJson<T>(
-  c: Context,
-  data: T,
-  status: ContentfulStatusCode = 200,
-  meta?: Record<string, unknown>
-) {
-  return c.json<ApiSuccess<T>>({ ok: true, data, meta }, status);
+export function sendJson<
+  T,
+  S extends ContentfulStatusCode,
+  M extends Record<string, unknown>,
+>(c: Context, data: T, status: S = HttpStatus.OK as S, meta?: M) {
+  return c.json<ApiSuccess<T>, S>({ ok: true, data, meta }, status);
 }

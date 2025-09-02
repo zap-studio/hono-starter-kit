@@ -15,7 +15,7 @@ import {
 import { health } from '@/routes/health.route';
 import { createUser, getUser, listUsers } from '@/services/example.service';
 import { customCors } from '@/zap/middlewares/custom-cors';
-import { HttpStatus } from '@/zap/utils/errors';
+import { HttpStatus } from '@/zap/utils/http';
 import { sendJson } from '@/zap/utils/response';
 
 export const app = new OpenAPIHono<{
