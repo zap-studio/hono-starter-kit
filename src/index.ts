@@ -56,8 +56,10 @@ app.use('*', (c, next) => {
     normalizedOrigins = [CORS_DEFAULT_ORIGIN];
   }
 
+  const uniqueOrigins = Array.from(new Set(normalizedOrigins));
+
   const corsMiddlewareHandler = cors({
-    origin: normalizedOrigins,
+    origin: uniqueOrigins,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
     maxAge: CORS_MAX_AGE_SECONDS,
