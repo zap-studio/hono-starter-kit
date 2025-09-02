@@ -1,3 +1,5 @@
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
+
 export const HttpStatus = {
   OK: 200,
   CREATED: 201,
