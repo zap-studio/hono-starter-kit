@@ -1,22 +1,22 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
-import { HTTPException } from 'hono/http-exception';
-import { logger } from 'hono/logger';
-import { poweredBy } from 'hono/powered-by';
-import { prettyJSON } from 'hono/pretty-json';
-import type { RequestIdVariables } from 'hono/request-id';
-import { requestId } from 'hono/request-id';
-import { secureHeaders } from 'hono/secure-headers';
-import type { Bindings } from '@/lib/env';
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { HTTPException } from "hono/http-exception";
+import { logger } from "hono/logger";
+import { poweredBy } from "hono/powered-by";
+import { prettyJSON } from "hono/pretty-json";
+import type { RequestIdVariables } from "hono/request-id";
+import { requestId } from "hono/request-id";
+import { secureHeaders } from "hono/secure-headers";
+import type { Bindings } from "@/lib/env";
 import {
   createUserRoute,
   getUserRoute,
   listUsersRoute,
-} from '@/routes/example.route';
-import { health } from '@/routes/health.route';
-import { createUser, getUser, listUsers } from '@/services/example.service';
-import { customCors } from '@/zap/middlewares/custom-cors';
-import { HttpStatus } from '@/zap/utils/http';
-import { sendJson } from '@/zap/utils/response';
+} from "@/routes/example.route";
+import { health } from "@/routes/health.route";
+import { createUser, getUser, listUsers } from "@/services/example.service";
+import { customCors } from "@/zap/middlewares/custom-cors";
+import { HttpStatus } from "@/zap/utils/http";
+import { sendJson } from "@/zap/utils/response";
 
 export const app = new OpenAPIHono<{
   Bindings: Bindings;
@@ -24,7 +24,7 @@ export const app = new OpenAPIHono<{
 }>();
 
 // core middlewares
-const SERVER_NAME = 'Zap Studio';
+const SERVER_NAME = "Zap Studio";
 
 app.use(poweredBy({ serverName: SERVER_NAME }));
 app.use(secureHeaders());
@@ -33,30 +33,29 @@ app.use(logger());
 app.use(customCors());
 app.use(prettyJSON());
 
-// base route
-app.get('/', (c) => {
+// API routes
+const PREFIX = "/api";
+const VERSION = "/v1";
+const api = app.basePath(`${PREFIX}${VERSION}`);
+
+api.get("/", (c) => {
   return sendJson(
     c,
-    { message: 'Welcome to hono-starter-kit by Zap Studio!' },
+    { message: "Welcome to hono-starter-kit by Zap Studio!" },
     HttpStatus.OK
   );
 });
 
-// API routes
-const PREFIX = '/api';
-const VERSION = '/v1';
-const api = app.basePath(`${PREFIX}${VERSION}`);
-
 api.openapi(health, (c) => {
   return sendJson(
     c,
-    { status: 'ok', timestamp: Date.now(), version: API_VERSION },
+    { status: "ok", timestamp: Date.now(), version: API_VERSION },
     HttpStatus.OK
   );
 });
 
 api.openapi(listUsersRoute, (c) => {
-  const { page = '1', limit = '10', q } = c.req.valid('query');
+  const { page = "1", limit = "10", q } = c.req.valid("query");
   const pageNum = Number.parseInt(page, 10);
   const limitNum = Number.parseInt(limit, 10);
 
@@ -81,29 +80,29 @@ api.openapi(listUsersRoute, (c) => {
 });
 
 api.openapi(getUserRoute, (c) => {
-  const { id } = c.req.valid('param');
+  const { id } = c.req.valid("param");
   const user = getUser(id);
   if (!user) {
     throw new HTTPException(HttpStatus.NOT_FOUND, {
-      message: 'User not found',
+      message: "User not found",
     });
   }
   return sendJson(c, user, HttpStatus.OK);
 });
 
 api.openapi(createUserRoute, (c) => {
-  const input = c.req.valid('json');
+  const input = c.req.valid("json");
   const user = createUser(input);
   return sendJson(c, user, HttpStatus.CREATED);
 });
 
 // OpenAPI documentation
-const OPENAPI_DOC_ROUTE = '/doc';
-const OPENAPI_VERSION = '3.0.0';
-const API_VERSION = '1.0.0';
-const API_NAME = 'Zap Studio';
+const OPENAPI_DOC_ROUTE = "/doc";
+const OPENAPI_VERSION = "3.0.0";
+const API_VERSION = "1.0.0";
+const API_NAME = "Zap Studio";
 
-app.doc(OPENAPI_DOC_ROUTE, {
+api.doc(OPENAPI_DOC_ROUTE, {
   openapi: OPENAPI_VERSION,
   info: {
     version: API_VERSION,
@@ -113,7 +112,7 @@ app.doc(OPENAPI_DOC_ROUTE, {
 
 // not found
 app.notFound((c) => {
-  return sendJson(c, { message: 'Not Found' }, HttpStatus.NOT_FOUND);
+  return sendJson(c, { message: "Not Found" }, HttpStatus.NOT_FOUND);
 });
 
 // global error handler
@@ -124,7 +123,7 @@ app.onError((err, c) => {
 
   return sendJson(
     c,
-    { message: 'Internal Server Error' },
+    { message: "Internal Server Error" },
     HttpStatus.INTERNAL_SERVER_ERROR
   );
 });
