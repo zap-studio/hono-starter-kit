@@ -45,7 +45,13 @@ When creating your Hono app, pass the Cloudflare bindings for full type safety:
 
 ```ts
 // src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>();
+import { OpenAPIHono } from "@hono/zod-openapi";
+import type { RequestIdVariables } from "hono/request-id";
+
+const app = new OpenAPIHono<{
+  Bindings: CloudflareBindings;
+  Variables: RequestIdVariables;
+}>();
 ```
 
 ## Project Structure
