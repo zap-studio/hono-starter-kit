@@ -27,9 +27,7 @@ export const app = new OpenAPIHono<{
 
 // custom exceptions
 const TIMEOUT_IN_MS = 300_000; // 5 minutes
-const customTimeoutException = (context: Context) =>
-  new HTTPException(HttpStatus.REQUEST_TIMEOUT, {
-    message: `Request timeout after waiting ${context.req.header('Duration')} seconds. Please try again later.`,
+    message: `Request timeout after waiting ${TIMEOUT_IN_MS / 1000} seconds. Please try again later.`,
   });
 
 // core middlewares
