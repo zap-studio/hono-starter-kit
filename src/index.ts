@@ -9,14 +9,14 @@ import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
 import { timeout } from 'hono/timeout';
 import type { Bindings } from '@/lib/env';
-import { HttpStatus, toAppError } from '@/lib/errors';
+import { AppError, HttpStatus, toAppError } from '@/lib/errors';
 import {
   createUserRoute,
   getUserRoute,
   listUsersRoute,
 } from '@/routes/example.route';
 import { health } from '@/routes/health.route';
-import { sendError } from '@/utils/response';
+import { send, sendError } from '@/utils/response';
 import { createUser, getUser, listUsers } from './services/example.service';
 
 export const app = new OpenAPIHono<{
@@ -72,11 +72,9 @@ app.use('*', timeout(TIMEOUT_IN_MS, customTimeoutException));
 
 // API routes
 app.get('/', (c) => {
-  return c.json(
-    {
-      ok: true,
-      data: { message: 'Welcome to hono-starter-kit by Zap Studio!' },
-    },
+  return send(
+    c,
+    { message: 'Welcome to hono-starter-kit by Zap Studio!' },
     HttpStatus.OK
   );
 });
@@ -88,11 +86,9 @@ const api = new OpenAPIHono<{
 
 // routes
 api.openapi(health, (c) => {
-  return c.json(
-    {
-      ok: true,
-      data: { status: 'ok', timestamp: Date.now(), version: API_VERSION },
-    },
+  return send(
+    c,
+    { status: 'ok', timestamp: Date.now(), version: API_VERSION },
     HttpStatus.OK
   );
 });
@@ -102,7 +98,6 @@ api.openapi(listUsersRoute, (c) => {
   const pageNum = Number.parseInt(page, 10);
   const limitNum = Number.parseInt(limit, 10);
 
-  // Filter and paginate users
   let users = listUsers();
   if (q) {
     users = users.filter((user) =>
@@ -115,34 +110,31 @@ api.openapi(listUsersRoute, (c) => {
   const start = (pageNum - 1) * limitNum;
   const paginated = users.slice(start, start + limitNum);
 
-  return c.json(
-    {
-      ok: true,
-      data: paginated,
-      meta: { total, page: pageNum, limit: limitNum },
-    },
-    HttpStatus.OK
-  );
+  return send(c, paginated, HttpStatus.OK, {
+    total,
+    page: pageNum,
+    limit: limitNum,
+  });
 });
 
 api.openapi(getUserRoute, (c) => {
   const { id } = c.req.valid('param');
   const user = getUser(id);
   if (!user) {
-    return c.json({ ok: false, error: 'User not found' }, HttpStatus.NOT_FOUND);
+    return sendError(c, toAppError(AppError.notFound('User not found')));
   }
-  return c.json({ ok: true, data: user }, HttpStatus.OK);
+  return send(c, user, HttpStatus.OK);
 });
 
 api.openapi(createUserRoute, (c) => {
   const input = c.req.valid('json');
   try {
     const user = createUser(input);
-    return c.json({ ok: true, data: user }, HttpStatus.CREATED);
+    return send(c, user, HttpStatus.CREATED);
   } catch (error) {
-    return c.json(
-      { ok: false, error: (error as Error).message },
-      HttpStatus.BAD_REQUEST
+    return sendError(
+      c,
+      toAppError(AppError.badRequest((error as Error).message))
     );
   }
 });
