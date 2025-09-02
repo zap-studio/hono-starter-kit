@@ -91,7 +91,7 @@ api.openapi(health, (c) => {
   return c.json(
     {
       ok: true,
-      data: { timestamp: Date.now() },
+      data: { status: 'ok', timestamp: Date.now(), version: API_VERSION },
     },
     HttpStatus.OK
   );
@@ -126,7 +126,7 @@ api.openapi(createUserRoute, (c) => {
 // Set API prefix and version
 const PREFIX = '/api';
 const VERSION = '/v1';
-app.route(`${PREFIX}${VERSION}`, api);
+app.route(`${PREFIX}${VERSION}`, api); // "/api/v1" is the base path for the API
 
 // OpenAPI documentation
 const OPENAPI_DOC_ROUTE = '/doc';
