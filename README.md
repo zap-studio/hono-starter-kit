@@ -7,7 +7,7 @@ A modern, type-safe starter template for building Cloudflare Workers APIs with [
 - ⚡️ Fast, minimal API routing with Hono
 - 🦺 Strict type safety (Cloudflare Bindings)
 - 🧩 Modular structure: routes, services, schemas, middlewares, utils
-- 🛠️ Biome w/ Ultracite for formatting & linting
+- 🛠️ Biome with Ultracite for formatting & linting
 - 🧪 Vitest for testing
 - 🚀 Ready for local dev & Cloudflare deployment
 
@@ -41,6 +41,8 @@ bun run cf-typegen
 
 ## Usage
 
+### Type-safe API
+
 When creating your Hono app, pass the Cloudflare bindings for full type safety:
 
 ```ts
@@ -54,11 +56,19 @@ const app = new OpenAPIHono<{
 }>();
 ```
 
+### OpenAPI and Scalar UI
+
+Your Hono app automatically exposes:
+
+- **OpenAPI docs** at `/api/v1/doc` (OpenAPI 3.1)
+- **Scalar UI** at `/api/v1/scalar` (interactive API explorer)
+- **llms.txt** at `/api/v1/llms.txt` (OpenAPI as Markdown for LLMs)
+
 ## Project Structure
 
 ```
 src/
-  index.ts                # App entry point
+  index.ts                # App entry point (auto docs, Scalar UI, llms.txt)
   lib/
     env.ts                # Environment variable helpers
   routes/
@@ -107,3 +117,5 @@ bun run coverage
 
 - [Hono Documentation](https://hono.dev/)
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
+- [Scalar UI](https://scalar.com/)
+- [Ultracite](https://www.ultracite.ai/)

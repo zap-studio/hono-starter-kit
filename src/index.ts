@@ -24,6 +24,11 @@ export const app = new OpenAPIHono<{
   Variables: RequestIdVariables;
 }>();
 
+// API base path
+const PREFIX = "/api";
+const VERSION = "/v1";
+const api = app.basePath(`${PREFIX}${VERSION}`);
+
 // core middlewares
 app.use(secureHeaders());
 app.use(requestId());
@@ -32,10 +37,6 @@ app.use(customCors());
 app.use(prettyJSON());
 
 // API routes
-const PREFIX = "/api";
-const VERSION = "/v1";
-const api = app.basePath(`${PREFIX}${VERSION}`);
-
 api.get("/", (c) => {
   return sendJson(
     c,
