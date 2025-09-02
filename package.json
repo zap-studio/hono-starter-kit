@@ -5,8 +5,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-    "lint": "ultracite lint",
-    "format": "ultracite format",
+    "lint": "bun x ultracite check",
+    "format": "bun x ultracite fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage"
@@ -29,7 +29,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
-      "ultracite format"
+      "bun x ultracite fix"
     ]
   }
 }

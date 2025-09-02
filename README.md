@@ -1,13 +1,13 @@
 # Hono Starter Kit
 
-> A modern, type-safe starter template for building Cloudflare Workers APIs with [Hono](https://hono.dev/).
+A modern, type-safe starter template for building Cloudflare Workers APIs with [Hono](https://hono.dev/).
 
 ## Features
 
 - ⚡️ Fast, minimal API routing with Hono
 - 🦺 Strict type safety (Cloudflare Bindings)
 - 🧩 Modular structure: routes, services, schemas, middlewares, utils
-- 🛠️ Biome for formatting & linting
+- 🛠️ Biome w/ Ultracite for formatting & linting
 - 🧪 Vitest for testing
 - 🚀 Ready for local dev & Cloudflare deployment
 
@@ -78,8 +78,8 @@ src/
 Uses [Biome](https://biomejs.dev/) with [Ultracite](https://ultracite.ai/) for code quality:
 
 ```sh
-ultracite lint      # Check for issues
-ultracite format    # Auto-fix & format
+bun run lint     # Check for issues
+bun run format   # Auto-fix & format
 ```
 
 ## Testing
@@ -88,6 +88,8 @@ Run unit tests with Vitest:
 
 ```sh
 bun run test
+bun run test:watch
+bun run coverage
 ```
 
 ## Resources
