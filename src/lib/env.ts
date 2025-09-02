@@ -10,10 +10,6 @@ export type Bindings = {
     BlankSchema,
     '/'
   >;
-  PORT?: number;
-  NODE_ENV?: string;
-  RATE_LIMIT_POINTS?: number;
-  RATE_LIMIT_DURATION?: number;
-  CORS_ORIGINS?: string[];
+  CORS_ORIGINS?: string | string[];
   // Add other bindings, e.g. MY_KV?: KVNamespace;
 };

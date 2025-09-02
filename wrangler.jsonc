@@ -6,6 +6,10 @@
 	"compatibility_flags": [
 	   "nodejs_compat"
 	],
+	"dev": {
+		"port": 3000,
+		"local_protocol": "http"
+	},
 	// "vars": {
 	//   "MY_VAR": "my-variable"
 	// },

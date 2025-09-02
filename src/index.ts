@@ -42,8 +42,22 @@ app.use('*', secureHeaders());
 app.use('*', requestId());
 app.use('*', logger());
 app.use('*', (c, next) => {
+  const origins = c.env.CORS_ORIGINS;
+  let normalizedOrigins: string[];
+
+  if (typeof origins === 'string') {
+    normalizedOrigins = origins
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+  } else if (Array.isArray(origins)) {
+    normalizedOrigins = origins.map((origin) => origin.trim()).filter(Boolean);
+  } else {
+    normalizedOrigins = [CORS_DEFAULT_ORIGIN];
+  }
+
   const corsMiddlewareHandler = cors({
-    origin: c.env.CORS_ORIGINS || CORS_DEFAULT_ORIGIN,
+    origin: normalizedOrigins,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
     maxAge: CORS_MAX_AGE_SECONDS,
