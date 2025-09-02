@@ -9,6 +9,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "strictNullChecks": true,
+    "declaration": true,
+    "isolatedDeclarations": true,
 
     "baseUrl": ".",
     "paths": {
