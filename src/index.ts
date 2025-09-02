@@ -1,5 +1,4 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { poweredBy } from 'hono/powered-by';
@@ -10,21 +9,24 @@ import { secureHeaders } from 'hono/secure-headers';
 import { timeout } from 'hono/timeout';
 import type { Bindings } from '@/lib/env';
 import { AppError, HttpStatus, toAppError } from '@/lib/errors';
+import { customCors } from '@/middlewares/custom-cors';
 import {
   createUserRoute,
   getUserRoute,
   listUsersRoute,
 } from '@/routes/example.route';
 import { health } from '@/routes/health.route';
+import { createUser, getUser, listUsers } from '@/services/example.service';
 import { send, sendError } from '@/utils/response';
-import { createUser, getUser, listUsers } from './services/example.service';
 
 export const app = new OpenAPIHono<{
   Bindings: Bindings;
   Variables: RequestIdVariables;
 }>();
 
-// custom exceptions
+// core middlewares
+const SERVER_NAME = 'Zap Studio';
+
 const TIMEOUT_IN_MS = 300_000; // 5 minutes
 const SECONDS_IN_MS = 1000;
 const customTimeoutException = () =>
@@ -32,45 +34,16 @@ const customTimeoutException = () =>
     message: `Request timeout after waiting ${TIMEOUT_IN_MS / SECONDS_IN_MS} seconds. Please try again later.`,
   });
 
-// core middlewares
-const SERVER_NAME = 'Zap Studio';
-const CORS_MAX_AGE_SECONDS = 600;
-const CORS_DEFAULT_ORIGIN = '*';
-
 app.use(poweredBy({ serverName: SERVER_NAME }));
-app.use('*', secureHeaders());
-app.use('*', requestId());
-app.use('*', logger());
-app.use('*', (c, next) => {
-  const origins = c.env.CORS_ORIGINS;
-  let normalizedOrigins: string[];
-
-  if (typeof origins === 'string') {
-    normalizedOrigins = origins
-      .split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean);
-  } else if (Array.isArray(origins)) {
-    normalizedOrigins = origins.map((origin) => origin.trim()).filter(Boolean);
-  } else {
-    normalizedOrigins = [CORS_DEFAULT_ORIGIN];
-  }
-
-  const uniqueOrigins = Array.from(new Set(normalizedOrigins));
-
-  const corsMiddlewareHandler = cors({
-    origin: uniqueOrigins,
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-    maxAge: CORS_MAX_AGE_SECONDS,
-    credentials: true,
-  });
-  return corsMiddlewareHandler(c, next);
-});
-app.use('*', prettyJSON());
-app.use('*', timeout(TIMEOUT_IN_MS, customTimeoutException));
+app.use(secureHeaders());
+app.use(requestId());
+app.use(logger());
+app.use(customCors());
+app.use(prettyJSON());
+app.use(timeout(TIMEOUT_IN_MS, customTimeoutException));
 
 // API routes
+
 app.get('/', (c) => {
   return send(
     c,
@@ -79,10 +52,9 @@ app.get('/', (c) => {
   );
 });
 
-const api = new OpenAPIHono<{
-  Bindings: Bindings;
-  Variables: RequestIdVariables;
-}>();
+const PREFIX = '/api';
+const VERSION = '/v1';
+const api = app.basePath(`${PREFIX}${VERSION}`);
 
 // routes
 api.openapi(health, (c) => {
@@ -138,11 +110,6 @@ api.openapi(createUserRoute, (c) => {
     );
   }
 });
-
-// Set API prefix and version
-const PREFIX = '/api';
-const VERSION = '/v1';
-app.route(`${PREFIX}${VERSION}`, api); // "/api/v1" is the base path for the API
 
 // OpenAPI documentation
 const OPENAPI_DOC_ROUTE = '/doc';
