@@ -1,41 +1,31 @@
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
+import type { Bindings } from "@/lib/env";
+import { parseOrigins } from "../utils/parsing";
 
 const CORS_MAX_AGE_SECONDS = 600;
-const CORS_DEFAULT_ORIGIN = "*";
+export const CORS_DEFAULT_ORIGIN = "*";
 
-export const customCors = () => {
-  return createMiddleware((c, next) => {
-    const origins = c.env.CORS_ORIGINS;
-    let normalizedOrigins: string[];
+export const customCors = () =>
+  createMiddleware<{ Bindings: Bindings }>((c, next) => {
+    const uniqueOrigins = Array.from(new Set(parseOrigins(c.env.CORS_ORIGINS)));
 
-    if (typeof origins === "string") {
-      normalizedOrigins = origins
-        .split(",")
-        .map((_origin) => _origin.trim())
-        .filter(Boolean);
-    } else if (Array.isArray(origins)) {
-      normalizedOrigins = origins
-        .map((_origin) => _origin.trim())
-        .filter(Boolean);
-    } else {
-      normalizedOrigins = [CORS_DEFAULT_ORIGIN];
-    }
+    const onlyWildcard =
+      uniqueOrigins.length === 1 && uniqueOrigins[0] === CORS_DEFAULT_ORIGIN;
 
-    const uniqueOrigins = Array.from(new Set(normalizedOrigins));
+    const origin = onlyWildcard ? CORS_DEFAULT_ORIGIN : uniqueOrigins;
 
-    const hasWildcard = uniqueOrigins.includes(CORS_DEFAULT_ORIGIN);
-    const origin = hasWildcard ? CORS_DEFAULT_ORIGIN : uniqueOrigins;
-
-    const corsMiddlewareHandler = cors({
+    return cors({
       origin,
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
-      exposeHeaders: ["X-Request-Id"],
+      allowHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Request-Id",
+        "X-Powered-By",
+      ],
+      exposeHeaders: ["X-Request-Id", "X-Powered-By"],
       maxAge: CORS_MAX_AGE_SECONDS,
-      credentials: !hasWildcard,
-    });
-
-    return corsMiddlewareHandler(c, next);
+      credentials: !onlyWildcard,
+    })(c, next);
   });
-};
