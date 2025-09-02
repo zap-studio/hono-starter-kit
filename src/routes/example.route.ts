@@ -1,18 +1,30 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { UserCreateSchema, UserSchema } from '@/schemas/example.schema';
 
-// List users
+// List users (with pagination and filter)
 export const listUsersRoute = createRoute({
   method: 'get',
   path: '/users',
+  request: {
+    query: z.object({
+      page: z.string().regex(/^\d+$/).optional(), // page number as string
+      limit: z.string().regex(/^\d+$/).optional(), // items per page as string
+      q: z.string().optional(), // filter query
+    }),
+  },
   responses: {
     200: {
-      description: 'List all users',
+      description: 'List all users with pagination and filter',
       content: {
         'application/json': {
           schema: z.object({
             ok: z.literal(true),
             data: z.array(UserSchema),
+            meta: z.object({
+              total: z.number(),
+              page: z.number(),
+              limit: z.number(),
+            }),
           }),
         },
       },

@@ -98,7 +98,31 @@ api.openapi(health, (c) => {
 });
 
 api.openapi(listUsersRoute, (c) => {
-  return c.json({ ok: true, data: listUsers() }, HttpStatus.OK);
+  const { page = '1', limit = '10', q } = c.req.valid('query');
+  const pageNum = Number.parseInt(page, 10);
+  const limitNum = Number.parseInt(limit, 10);
+
+  // Filter and paginate users
+  let users = listUsers();
+  if (q) {
+    users = users.filter((user) =>
+      Object.values(user)
+        .map((v) => String(v).toLowerCase())
+        .some((v) => v.includes(q.toLowerCase()))
+    );
+  }
+  const total = users.length;
+  const start = (pageNum - 1) * limitNum;
+  const paginated = users.slice(start, start + limitNum);
+
+  return c.json(
+    {
+      ok: true,
+      data: paginated,
+      meta: { total, page: pageNum, limit: limitNum },
+    },
+    HttpStatus.OK
+  );
 });
 
 api.openapi(getUserRoute, (c) => {
