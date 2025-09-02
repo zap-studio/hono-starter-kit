@@ -33,13 +33,8 @@ export const customCors = () =>
     return cors({
       origin,
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: [
-        "Content-Type",
-        "Authorization",
-        "X-Request-Id",
-        "X-Powered-By",
-      ],
-      exposeHeaders: ["X-Request-Id", "X-Powered-By"],
+      allowHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
+      exposeHeaders: ["X-Request-Id"],
       maxAge: CORS_MAX_AGE_SECONDS,
       credentials,
     })(c, next);

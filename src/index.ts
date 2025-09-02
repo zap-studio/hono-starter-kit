@@ -1,7 +1,7 @@
+import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
-import { poweredBy } from "hono/powered-by";
 import { prettyJSON } from "hono/pretty-json";
 import type { RequestIdVariables } from "hono/request-id";
 import { requestId } from "hono/request-id";
@@ -24,9 +24,6 @@ export const app = new OpenAPIHono<{
 }>();
 
 // core middlewares
-const SERVER_NAME = "Zap Studio";
-
-app.use(poweredBy({ serverName: SERVER_NAME }));
 app.use(secureHeaders());
 app.use(requestId());
 app.use(logger());
@@ -96,17 +93,24 @@ api.openapi(createUserRoute, (c) => {
 
 // OpenAPI documentation
 const OPENAPI_DOC_ROUTE = "/doc";
-const OPENAPI_VERSION = "3.0.0";
-const API_VERSION = "1.0.0";
+const SWAGGER_UI_ROUTE = "/ui";
+
 const API_NAME = "Zap Studio";
+const API_VERSION = "1.0.0";
+const OPENAPI_VERSION = "3.0.0";
 
 api.doc(OPENAPI_DOC_ROUTE, {
   openapi: OPENAPI_VERSION,
   info: {
-    version: API_VERSION,
     title: API_NAME,
+    version: API_VERSION,
   },
 });
+
+api.get(
+  SWAGGER_UI_ROUTE,
+  swaggerUI({ url: `${PREFIX}${VERSION}${OPENAPI_DOC_ROUTE}` })
+);
 
 // not found
 app.notFound((c) => {
