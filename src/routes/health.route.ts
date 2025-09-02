@@ -1,14 +1,14 @@
-import { createRoute } from '@hono/zod-openapi';
-import { HealthResponseSchema } from '@/schemas/health.schema';
+import { createRoute } from "@hono/zod-openapi";
+import { HealthResponseSchema } from "@/schemas/health.schema";
 
 export const health = createRoute({
-  method: 'get',
-  path: '/health',
+  method: "get",
+  path: "/health",
   responses: {
     200: {
-      description: 'Healthcheck',
+      description: "Healthcheck",
       content: {
-        'application/json': {
+        "application/json": {
           schema: HealthResponseSchema,
         },
       },

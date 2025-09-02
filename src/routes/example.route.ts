@@ -1,10 +1,10 @@
-import { createRoute, z } from '@hono/zod-openapi';
-import { UserCreateSchema, UserSchema } from '@/schemas/example.schema';
+import { createRoute, z } from "@hono/zod-openapi";
+import { UserCreateSchema, UserSchema } from "@/schemas/example.schema";
 
 // List users (with pagination and filter)
 export const listUsersRoute = createRoute({
-  method: 'get',
-  path: '/users',
+  method: "get",
+  path: "/users",
   request: {
     query: z.object({
       page: z.string().regex(/^\d+$/).optional(), // page number as string
@@ -14,9 +14,9 @@ export const listUsersRoute = createRoute({
   },
   responses: {
     200: {
-      description: 'List all users with pagination and filter',
+      description: "List all users with pagination and filter",
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             ok: z.literal(true),
             data: z.array(UserSchema),
@@ -34,8 +34,8 @@ export const listUsersRoute = createRoute({
 
 // Get user by ID
 export const getUserRoute = createRoute({
-  method: 'get',
-  path: '/users/{id}',
+  method: "get",
+  path: "/users/{id}",
   request: {
     params: z.object({
       id: z.uuid(),
@@ -43,9 +43,9 @@ export const getUserRoute = createRoute({
   },
   responses: {
     200: {
-      description: 'Get user by ID',
+      description: "Get user by ID",
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             ok: z.literal(true),
             data: UserSchema,
@@ -54,9 +54,9 @@ export const getUserRoute = createRoute({
       },
     },
     404: {
-      description: 'User not found',
+      description: "User not found",
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             ok: z.literal(false),
             error: z.string(),
@@ -69,12 +69,12 @@ export const getUserRoute = createRoute({
 
 // Create user
 export const createUserRoute = createRoute({
-  method: 'post',
-  path: '/users',
+  method: "post",
+  path: "/users",
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: UserCreateSchema,
         },
       },
@@ -82,9 +82,9 @@ export const createUserRoute = createRoute({
   },
   responses: {
     201: {
-      description: 'User created',
+      description: "User created",
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             ok: z.literal(true),
             data: UserSchema,
@@ -93,9 +93,9 @@ export const createUserRoute = createRoute({
       },
     },
     400: {
-      description: 'Invalid input',
+      description: "Invalid input",
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             ok: z.literal(false),
             error: z.string(),

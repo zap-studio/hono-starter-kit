@@ -1,6 +1,6 @@
-import type { Context } from 'hono';
-import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import { HttpStatus } from './http';
+import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { HttpStatus } from "./http";
 
 /**
  * Represents a successful API response.
