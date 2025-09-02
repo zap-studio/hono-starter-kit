@@ -16,7 +16,7 @@ import { health } from "@/routes/health.route";
 import { createUser, getUser, listUsers } from "@/services/example.service";
 import { customCors } from "@/zap/middlewares/custom-cors";
 import { HttpStatus } from "@/zap/utils/http";
-import { sendJson } from "@/zap/utils/response";
+import { sendError, sendJson } from "@/zap/utils/response";
 
 export const app = new OpenAPIHono<{
   Bindings: Bindings;
@@ -83,9 +83,7 @@ api.openapi(getUserRoute, (c) => {
   const { id } = c.req.valid("param");
   const user = getUser(id);
   if (!user) {
-    throw new HTTPException(HttpStatus.NOT_FOUND, {
-      message: "User not found",
-    });
+    return sendError(c, "User not found", HttpStatus.NOT_FOUND);
   }
   return sendJson(c, user, HttpStatus.OK);
 });
@@ -112,7 +110,7 @@ api.doc(OPENAPI_DOC_ROUTE, {
 
 // not found
 app.notFound((c) => {
-  return sendJson(c, { message: "Not Found" }, HttpStatus.NOT_FOUND);
+  return sendError(c, "Not Found", HttpStatus.NOT_FOUND);
 });
 
 // global error handler
@@ -121,10 +119,11 @@ app.onError((err, c) => {
     return err.getResponse();
   }
 
-  return sendJson(
+  return sendError(
     c,
-    { message: "Internal Server Error" },
-    HttpStatus.INTERNAL_SERVER_ERROR
+    "Internal Server Error",
+    HttpStatus.INTERNAL_SERVER_ERROR,
+    { cause: err }
   );
 });
 
