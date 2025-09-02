@@ -123,7 +123,7 @@ app.onError((err, c) => {
     c,
     "Internal Server Error",
     HttpStatus.INTERNAL_SERVER_ERROR,
-    { cause: err }
+    { cause: err, requestId: c.get("requestId") }
   );
 });
 
