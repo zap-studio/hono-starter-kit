@@ -1,5 +1,6 @@
-import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { Scalar } from "@scalar/hono-api-reference";
+import { createMarkdownFromOpenApi } from "@scalar/openapi-to-markdown";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
@@ -93,11 +94,11 @@ api.openapi(createUserRoute, (c) => {
 
 // OpenAPI documentation
 const OPENAPI_DOC_ROUTE = "/doc";
-const SWAGGER_UI_ROUTE = "/ui";
+const SCALAR_UI_ROUTE = "/scalar";
 
 const API_NAME = "Zap Studio";
 const API_VERSION = "1.0.0";
-const OPENAPI_VERSION = "3.0.0";
+const OPENAPI_VERSION = "3.1.0";
 
 api.doc(OPENAPI_DOC_ROUTE, {
   openapi: OPENAPI_VERSION,
@@ -108,9 +109,21 @@ api.doc(OPENAPI_DOC_ROUTE, {
 });
 
 api.get(
-  SWAGGER_UI_ROUTE,
-  swaggerUI({ url: `${PREFIX}${VERSION}${OPENAPI_DOC_ROUTE}` })
+  SCALAR_UI_ROUTE,
+  Scalar({ url: `${PREFIX}${VERSION}${OPENAPI_DOC_ROUTE}` })
 );
+
+// Get the OpenAPI document
+const content = api.getOpenAPI31Document({
+  openapi: OPENAPI_VERSION,
+  info: { title: API_NAME, version: API_VERSION },
+});
+
+const markdown = await createMarkdownFromOpenApi(JSON.stringify(content));
+
+api.get("/llms.txt", (c) => {
+  return c.text(markdown);
+});
 
 // not found
 app.notFound((c) => {
