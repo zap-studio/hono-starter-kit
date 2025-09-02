@@ -94,7 +94,7 @@ api.openapi(createUserRoute, (c) => {
 });
 
 // OpenAPI documentation
-const OPENAPI_DOC_ROUTE = "/doc";
+const OPENAPI_DOC_ROUTE = "/docs";
 const SCALAR_UI_ROUTE = "/scalar";
 
 const API_NAME = "Zap Studio";

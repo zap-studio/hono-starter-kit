@@ -60,7 +60,7 @@ const app = new OpenAPIHono<{
 
 Your Hono app automatically exposes:
 
-- **OpenAPI docs** at `/api/v1/doc` (OpenAPI 3.1)
+- **OpenAPI docs** at `/api/v1/docs` (OpenAPI 3.1)
 - **Scalar UI** at `/api/v1/scalar` (interactive API explorer)
 - **llms.txt** at `/api/v1/llms.txt` (OpenAPI as Markdown for LLMs)
 
