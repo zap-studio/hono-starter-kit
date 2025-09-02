@@ -8,12 +8,27 @@ export const CORS_DEFAULT_ORIGIN = "*";
 
 export const customCors = () =>
   createMiddleware<{ Bindings: Bindings }>((c, next) => {
-    const uniqueOrigins = Array.from(new Set(parseOrigins(c.env.CORS_ORIGINS)));
+    const rawOrigins = parseOrigins(c.env.CORS_ORIGINS);
 
-    const onlyWildcard =
-      uniqueOrigins.length === 1 && uniqueOrigins[0] === CORS_DEFAULT_ORIGIN;
+    // Normalize, trim, remove empty and duplicates
+    const uniqueOrigins = Array.from(
+      new Set(rawOrigins.map((o) => o.trim()).filter(Boolean))
+    );
 
-    const origin = onlyWildcard ? CORS_DEFAULT_ORIGIN : uniqueOrigins;
+    // Determine final origin(s)
+    let origin: string | string[];
+    if (uniqueOrigins.length === 0) {
+      origin = CORS_DEFAULT_ORIGIN;
+    } else if (
+      uniqueOrigins.includes(CORS_DEFAULT_ORIGIN) &&
+      uniqueOrigins.length > 1
+    ) {
+      origin = uniqueOrigins.filter((o) => o !== CORS_DEFAULT_ORIGIN);
+    } else {
+      origin = uniqueOrigins.length === 1 ? uniqueOrigins[0] : uniqueOrigins;
+    }
+
+    const credentials = origin !== CORS_DEFAULT_ORIGIN;
 
     return cors({
       origin,
@@ -26,6 +41,6 @@ export const customCors = () =>
       ],
       exposeHeaders: ["X-Request-Id", "X-Powered-By"],
       maxAge: CORS_MAX_AGE_SECONDS,
-      credentials: !onlyWildcard,
+      credentials,
     })(c, next);
   });
