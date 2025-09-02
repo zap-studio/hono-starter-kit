@@ -7,8 +7,14 @@ export const listUsersRoute = createRoute({
   path: "/users",
   request: {
     query: z.object({
-      page: z.string().regex(/^\d+$/).optional(), // page number as string
-      limit: z.string().regex(/^\d+$/).optional(), // items per page as string
+      page: z
+        .string()
+        .regex(/^[1-9]\d*$/)
+        .optional(), // page number as string but must be a positive integer
+      limit: z
+        .string()
+        .regex(/^[1-9]\d*$/)
+        .optional(), // items per page as string but must be a positive integer
       q: z.string().optional(), // filter query
     }),
   },

@@ -12,11 +12,11 @@ export const customCors = () => {
     if (typeof origins === "string") {
       normalizedOrigins = origins
         .split(",")
-        .map((origin) => origin.trim())
+        .map((_origin) => _origin.trim())
         .filter(Boolean);
     } else if (Array.isArray(origins)) {
       normalizedOrigins = origins
-        .map((origin) => origin.trim())
+        .map((_origin) => _origin.trim())
         .filter(Boolean);
     } else {
       normalizedOrigins = [CORS_DEFAULT_ORIGIN];
@@ -24,12 +24,16 @@ export const customCors = () => {
 
     const uniqueOrigins = Array.from(new Set(normalizedOrigins));
 
+    const hasWildcard = uniqueOrigins.includes(CORS_DEFAULT_ORIGIN);
+    const origin = hasWildcard ? CORS_DEFAULT_ORIGIN : uniqueOrigins;
+
     const corsMiddlewareHandler = cors({
-      origin: uniqueOrigins,
+      origin,
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: ["Content-Type", "Authorization"],
+      allowHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
+      exposeHeaders: ["X-Request-Id"],
       maxAge: CORS_MAX_AGE_SECONDS,
-      credentials: !uniqueOrigins.includes("*"),
+      credentials: !hasWildcard,
     });
 
     return corsMiddlewareHandler(c, next);
