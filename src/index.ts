@@ -6,7 +6,6 @@ import { prettyJSON } from 'hono/pretty-json';
 import type { RequestIdVariables } from 'hono/request-id';
 import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
-import { timeout } from 'hono/timeout';
 import type { Bindings } from '@/lib/env';
 import {
   createUserRoute,
@@ -27,20 +26,12 @@ export const app = new OpenAPIHono<{
 // core middlewares
 const SERVER_NAME = 'Zap Studio';
 
-const TIMEOUT_IN_MS = 300_000; // 5 minutes
-const SECONDS_IN_MS = 1000;
-const customTimeoutException = () =>
-  new HTTPException(HttpStatus.REQUEST_TIMEOUT, {
-    message: `Request timeout after waiting ${TIMEOUT_IN_MS / SECONDS_IN_MS} seconds. Please try again later.`,
-  });
-
 app.use(poweredBy({ serverName: SERVER_NAME }));
 app.use(secureHeaders());
 app.use(requestId());
 app.use(logger());
 app.use(customCors());
 app.use(prettyJSON());
-app.use(timeout(TIMEOUT_IN_MS, customTimeoutException));
 
 // base route
 app.get('/', (c) => {
@@ -71,10 +62,11 @@ api.openapi(listUsersRoute, (c) => {
 
   let users = listUsers();
   if (q) {
+    const query = q.toLowerCase();
     users = users.filter((user) =>
       Object.values(user)
         .map((v) => String(v).toLowerCase())
-        .some((v) => v.includes(q.toLowerCase()))
+        .some((v) => v.includes(query))
     );
   }
   const total = users.length;
