@@ -71,6 +71,16 @@ app.use('*', prettyJSON());
 app.use('*', timeout(TIMEOUT_IN_MS, customTimeoutException));
 
 // API routes
+app.get('/', (c) => {
+  return c.json(
+    {
+      ok: true,
+      data: { message: 'Welcome to hono-starter-kit by Zap Studio!' },
+    },
+    HttpStatus.OK
+  );
+});
+
 const api = new OpenAPIHono<{
   Bindings: Bindings;
   Variables: RequestIdVariables;
@@ -81,7 +91,7 @@ api.openapi(health, (c) => {
   return c.json(
     {
       ok: true,
-      data: { status: 'ok', timestamp: Date.now() },
+      data: { timestamp: Date.now() },
     },
     HttpStatus.OK
   );
