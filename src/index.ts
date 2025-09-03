@@ -6,18 +6,21 @@ import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
+import { BASE_PATH, PREFIX, VERSION } from "@/data/base-path";
 import {
-  createUserRoute,
-  getUserRoute,
-  listUsersRoute,
-} from "@/routes/example.route";
-import { health } from "@/routes/health.route";
-import { createUser, getUser, listUsers } from "@/services/example.service";
-import { customCors } from "@/zap/middlewares/custom-cors";
+  API_NAME,
+  API_VERSION,
+  OPENAPI_DOC_ROUTE,
+  OPENAPI_VERSION,
+  SCALAR_UI_ROUTE,
+} from "@/data/openapi";
+import { healthRouter } from "@/routers/health.router";
+import { customCors } from "@/zap/middlewares/custom-cors.middleware";
 import type { Env } from "@/zap/utils/env";
 import { HttpStatus } from "@/zap/utils/http";
-import { sendError, sendJson } from "@/zap/utils/response";
+import { sendError } from "@/zap/utils/response";
 import { formatZodErrors } from "@/zap/utils/zod";
+import { exampleRouter } from "./routers/example.router";
 
 export const app = new OpenAPIHono<Env>({
   defaultHook: (result, c) => {
@@ -29,83 +32,21 @@ export const app = new OpenAPIHono<Env>({
   },
 });
 
-// API base path
-const PREFIX = "/api";
-const VERSION = "/v1";
-const api = app.basePath(`${PREFIX}${VERSION}`);
+export const api = app.basePath(BASE_PATH);
 
 // core middlewares
-app.use(secureHeaders());
-app.use(requestId());
-app.use(logger());
-app.use(customCors());
-app.use(prettyJSON());
+api.use(secureHeaders());
+api.use(requestId());
+api.use(logger());
+api.use(customCors());
+api.use(prettyJSON());
 
 // API routes
-api.get("/", (c) => {
-  return sendJson(
-    c,
-    { message: "Welcome to hono-starter-kit by Zap Studio!" },
-    HttpStatus.OK
-  );
-});
-
-api.openapi(health, (c) => {
-  return sendJson(
-    c,
-    { status: "ok", timestamp: Date.now(), version: API_VERSION },
-    HttpStatus.OK
-  );
-});
-
-api.openapi(listUsersRoute, (c) => {
-  const { page = "1", limit = "10", q } = c.req.valid("query");
-  const pageNum = Number.parseInt(page, 10);
-  const limitNum = Number.parseInt(limit, 10);
-
-  let users = listUsers();
-  if (q) {
-    const query = q.toLowerCase();
-    users = users.filter((user) =>
-      Object.values(user)
-        .map((v) => String(v).toLowerCase())
-        .some((v) => v.includes(query))
-    );
-  }
-  const total = users.length;
-  const start = (pageNum - 1) * limitNum;
-  const paginated = users.slice(start, start + limitNum);
-
-  return sendJson(c, paginated, HttpStatus.OK, {
-    total,
-    page: pageNum,
-    limit: limitNum,
-  });
-});
-
-api.openapi(getUserRoute, (c) => {
-  const { id } = c.req.valid("param");
-  const user = getUser(id);
-  if (!user) {
-    return sendError(c, "User not found", HttpStatus.NOT_FOUND);
-  }
-  return sendJson(c, user, HttpStatus.OK);
-});
-
-api.openapi(createUserRoute, (c) => {
-  const input = c.req.valid("json");
-  const user = createUser(input);
-  return sendJson(c, user, HttpStatus.CREATED);
-});
+export const routes = api
+  .route("/health", healthRouter)
+  .route("/example", exampleRouter);
 
 // OpenAPI documentation
-const OPENAPI_DOC_ROUTE = "/docs";
-const SCALAR_UI_ROUTE = "/scalar";
-
-const API_NAME = "Zap Studio";
-const API_VERSION = "1.0.0";
-const OPENAPI_VERSION = "3.1.0";
-
 api.doc(OPENAPI_DOC_ROUTE, {
   openapi: OPENAPI_VERSION,
   info: {
@@ -119,7 +60,7 @@ api.get(
   Scalar({ url: `${PREFIX}${VERSION}${OPENAPI_DOC_ROUTE}` })
 );
 
-// Get the OpenAPI document
+// llms.txt
 const content = api.getOpenAPI31Document({
   openapi: OPENAPI_VERSION,
   info: { title: API_NAME, version: API_VERSION },
@@ -132,12 +73,12 @@ api.get("/llms.txt", (c) => {
 });
 
 // not found
-app.notFound((c) => {
+api.notFound((c) => {
   return sendError(c, "Not Found", HttpStatus.NOT_FOUND);
 });
 
 // global error handler
-app.onError((err, c) => {
+api.onError((err, c) => {
   if (err instanceof HTTPException) {
     return err.getResponse();
   }
@@ -150,5 +91,4 @@ app.onError((err, c) => {
   );
 });
 
-export type App = typeof app;
 export default app;
