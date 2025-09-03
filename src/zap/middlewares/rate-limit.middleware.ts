@@ -38,8 +38,10 @@ export function customRateLimit(): MiddlewareHandler {
       return next();
     }
 
-    return sendError(c, "Rate limit exceeded", HttpStatus.TOO_MANY_REQUESTS, {
-      retryAfter: Math.ceil((WINDOW_MS - elapsed) / MILLISECONDS_PER_SECOND),
-    });
+    return Promise.resolve(
+      sendError(c, "Rate limit exceeded", HttpStatus.TOO_MANY_REQUESTS, {
+        retryAfter: Math.ceil((WINDOW_MS - elapsed) / MILLISECONDS_PER_SECOND),
+      })
+    );
   });
 }
