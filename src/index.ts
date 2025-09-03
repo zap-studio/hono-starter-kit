@@ -1,12 +1,11 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { Scalar } from "@scalar/hono-api-reference";
 import { createMarkdownFromOpenApi } from "@scalar/openapi-to-markdown";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
-import { BASE_PATH, PREFIX, VERSION } from "@/data/base-path";
+import { BASE_PATH } from "@/data/base-path";
 import {
   API_NAME,
   API_VERSION,
@@ -14,13 +13,14 @@ import {
   OPENAPI_VERSION,
   SCALAR_UI_ROUTE,
 } from "@/data/openapi";
+import { exampleRouter } from "@/routers/example.router";
 import { healthRouter } from "@/routers/health.router";
+import { scalarRouter } from "@/routers/scalar.router";
 import { customCors } from "@/zap/middlewares/custom-cors.middleware";
 import type { Env } from "@/zap/utils/env";
 import { HttpStatus } from "@/zap/utils/http";
 import { sendError } from "@/zap/utils/response";
 import { formatZodErrors } from "@/zap/utils/zod";
-import { exampleRouter } from "./routers/example.router";
 
 export const app = new OpenAPIHono<Env>({
   defaultHook: (result, c) => {
@@ -44,6 +44,7 @@ api.use(prettyJSON());
 // API routes
 export const routes = api
   .route("/health", healthRouter)
+  .route(SCALAR_UI_ROUTE, scalarRouter)
   .route("/users", exampleRouter);
 
 // OpenAPI documentation
@@ -54,11 +55,6 @@ api.doc(OPENAPI_DOC_ROUTE, {
     version: API_VERSION,
   },
 });
-
-api.get(
-  SCALAR_UI_ROUTE,
-  Scalar({ url: `${PREFIX}${VERSION}${OPENAPI_DOC_ROUTE}` })
-);
 
 // llms.txt
 const content = api.getOpenAPI31Document({
