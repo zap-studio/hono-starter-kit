@@ -10,9 +10,9 @@
 		"port": 3000,
 		"local_protocol": "http"
 	},
-	// "vars": {
-	//   "MY_VAR": "my-variable"
-	// },
+	"vars": {
+		"CORS_ORIGINS": "http://localhost:5173,http://localhost:3000,http://localhost:8000"
+	},
 	// "kv_namespaces": [
 	//   {
 	//     "binding": "MY_KV_NAMESPACE",
