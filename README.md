@@ -68,24 +68,37 @@ Your Hono app automatically exposes:
 
 ```
 src/
-  index.ts                # App entry point (auto docs, Scalar UI, llms.txt)
+  index.ts                  # App entry point (auto docs, Scalar UI, llms.txt)
+  data/
+    base-path.ts            # Base path configuration
+    openapi.ts              # OpenAPI helpers
   lib/
-    env.ts                # Environment variable helpers
+    env.ts                  # Environment variable helpers
+    hc.ts                   # Health check helpers
+  routers/
+    example.router.ts       # Example router
+    health.router.ts        # Health check router
+    scalar.router.ts        # Scalar UI router
   routes/
-    example.route.ts      # Example API route
-    health.route.ts       # Health check route
+    example.route.ts        # Example API route
+    health.route.ts         # Health check route
   schemas/
-    example.schema.ts     # Example validation schema
-    health.schema.ts      # Health check schema
+    example.schema.ts       # Example validation schema
+    health.schema.ts        # Health check schema
   services/
-    example.service.ts    # Example business logic
+    example.service.ts      # Example business logic
   zap/
     middlewares/
-      custom-cors.ts      # Custom CORS middleware
+      cors.middleware.ts    # Custom CORS middleware
+      rate-limit.middleware.ts # Rate limiting middleware
+    schemas/
+      response.schema.ts    # Response schema
     utils/
-      http.ts             # HTTP helpers
-      parsing.ts          # Parsing utilities
-      response.ts         # Response formatting
+      env.ts               # Environment variable helpers (Zap)
+      http.ts              # HTTP helpers
+      parsing.ts           # Parsing utilities
+      response.ts          # Response formatting
+      zod.ts               # Zod helpers
 ```
 
 ## Scripts
