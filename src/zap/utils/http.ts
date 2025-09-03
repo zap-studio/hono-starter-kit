@@ -20,6 +20,8 @@ export const HttpStatus = {
   REQUEST_TIMEOUT: 408,
   /** CONFLICT: The request could not be completed due to a conflict with the current state of the resource. */
   CONFLICT: 409,
+  /** UNPROCESSABLE_ENTITY: The request was well-formed but could not be followed due to semantic errors. */
+  UNPROCESSABLE_ENTITY: 422,
   /** RATE_LIMITED: The user has sent too many requests in a given amount of time. */
   RATE_LIMITED: 429,
   /** INTERNAL_SERVER_ERROR: An unexpected error occurred on the server. */

@@ -18,11 +18,20 @@ import { createUser, getUser, listUsers } from "@/services/example.service";
 import { customCors } from "@/zap/middlewares/custom-cors";
 import { HttpStatus } from "@/zap/utils/http";
 import { sendError, sendJson } from "@/zap/utils/response";
+import { formatZodErrors } from "@/zap/utils/zod";
 
 export const app = new OpenAPIHono<{
   Bindings: Bindings;
   Variables: RequestIdVariables;
-}>();
+}>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return sendError(c, "Validation Error", HttpStatus.UNPROCESSABLE_ENTITY, {
+        errors: formatZodErrors(result),
+      });
+    }
+  },
+});
 
 // API base path
 const PREFIX = "/api";
