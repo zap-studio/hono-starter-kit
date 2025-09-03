@@ -1,6 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { API_VERSION } from "@/data/openapi";
 import { health } from "@/routes/health.route";
+import type { Env } from "@/zap/utils/env";
 import { HttpStatus } from "@/zap/utils/http";
 import { sendJson } from "@/zap/utils/response";
 
