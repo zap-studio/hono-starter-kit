@@ -4,10 +4,8 @@ import { createMarkdownFromOpenApi } from "@scalar/openapi-to-markdown";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
-import type { RequestIdVariables } from "hono/request-id";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
-import type { Bindings } from "@/lib/env";
 import {
   createUserRoute,
   getUserRoute,
@@ -16,14 +14,12 @@ import {
 import { health } from "@/routes/health.route";
 import { createUser, getUser, listUsers } from "@/services/example.service";
 import { customCors } from "@/zap/middlewares/custom-cors";
+import type { Env } from "@/zap/utils/env";
 import { HttpStatus } from "@/zap/utils/http";
 import { sendError, sendJson } from "@/zap/utils/response";
 import { formatZodErrors } from "@/zap/utils/zod";
 
-export const app = new OpenAPIHono<{
-  Bindings: Bindings;
-  Variables: RequestIdVariables;
-}>({
+export const app = new OpenAPIHono<Env>({
   defaultHook: (result, c) => {
     if (!result.success) {
       return sendError(c, "Validation Error", HttpStatus.UNPROCESSABLE_ENTITY, {
