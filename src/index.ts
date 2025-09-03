@@ -44,7 +44,7 @@ api.use(prettyJSON());
 // API routes
 export const routes = api
   .route("/health", healthRouter)
-  .route("/example", exampleRouter);
+  .route("/users", exampleRouter);
 
 // OpenAPI documentation
 api.doc(OPENAPI_DOC_ROUTE, {

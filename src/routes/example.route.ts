@@ -13,7 +13,7 @@ import {
 // List users (with pagination and filter)
 export const listUsersRoute = createRoute({
   method: "get",
-  path: "/users",
+  path: "/",
   request: {
     query: ListUsersQuerySchema,
   },
@@ -32,7 +32,7 @@ export const listUsersRoute = createRoute({
 // Get user by ID
 export const getUserRoute = createRoute({
   method: "get",
-  path: "/users/{id}",
+  path: "/{id}",
   request: {
     params: GetUserParamsSchema,
   },
@@ -59,7 +59,7 @@ export const getUserRoute = createRoute({
 // Create user
 export const createUserRoute = createRoute({
   method: "post",
-  path: "/users",
+  path: "/",
   request: {
     body: {
       content: {
