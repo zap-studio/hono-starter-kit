@@ -39,7 +39,10 @@ api.use(secureHeaders());
 api.use(requestId());
 api.use(logger());
 api.use(customCors());
-api.use(prettyJSON());
+
+if (process.env.NODE_ENV === "development") {
+  api.use(prettyJSON());
+}
 
 // API routes
 export const routes = api
