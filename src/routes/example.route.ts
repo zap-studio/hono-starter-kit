@@ -78,7 +78,7 @@ export const createUserRoute = createRoute({
         },
       },
     },
-    400: {
+    422: {
       description: "Invalid input",
       content: {
         "application/json": {
