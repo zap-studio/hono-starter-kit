@@ -4,6 +4,7 @@ import { createMiddleware } from "hono/factory";
 import type { Bindings } from "@/lib/env";
 import { parseOrigins } from "../utils/parsing";
 
+const ALWAYS_ALLOWED_PATHS = ["/api/v1/docs", "/api/v1/scalar"];
 const CORS_MAX_AGE_SECONDS = 600;
 export const CORS_DEFAULT_ORIGIN = "*";
 
@@ -34,6 +35,13 @@ export function customCors(): MiddlewareHandler {
     }
 
     const credentials = origin !== CORS_DEFAULT_ORIGIN;
+
+    // Always allow docs & scalar endpoints
+    if (
+      ALWAYS_ALLOWED_PATHS.some((p) => c.req.path.toLowerCase().startsWith(p))
+    ) {
+      return cors({ origin: "*", allowMethods: ["GET", "OPTIONS"] })(c, next);
+    }
 
     return cors({
       origin,
