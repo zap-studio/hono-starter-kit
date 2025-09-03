@@ -3,7 +3,7 @@ import { HealthResponseSchema } from "@/schemas/health.schema";
 
 export const health = createRoute({
   method: "get",
-  path: "/health",
+  path: "/",
   responses: {
     200: {
       description: "Healthcheck",
