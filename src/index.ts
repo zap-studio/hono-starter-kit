@@ -83,11 +83,14 @@ api.onError((err, c) => {
     return err.getResponse();
   }
 
+  // biome-ignore lint/suspicious/noConsole: log the error server-side with requestId
+  console.error({ requestId: c.get("requestId"), err }, "Unhandled error");
+
   return sendError(
     c,
     "Internal Server Error",
     HttpStatus.INTERNAL_SERVER_ERROR,
-    { cause: err, requestId: c.get("requestId") }
+    { requestId: c.get("requestId") }
   );
 });
 
