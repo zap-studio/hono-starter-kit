@@ -5,8 +5,18 @@ export const HealthResponseSchema = z.object({
     description: "Indicates the health status of the service",
     example: true,
   }),
-  data: z.any().openapi({
-    description: "Additional data about the health status",
-    example: { timestamp: Date.now() },
+  data: z.object({
+    status: z.literal("ok").openapi({
+      description: "Service status",
+      example: "ok",
+    }),
+    version: z.string().openapi({
+      description: "API version",
+      example: "1.0.0",
+    }),
+    timestamp: z.number().openapi({
+      description: "Current server timestamp (ms since epoch)",
+      example: 1_736_012_345_678,
+    }),
   }),
 });
