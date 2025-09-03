@@ -1,5 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
 import {
+  CreateUserBadRequestResponseSchema,
   CreateUserResponseSchema,
   GetUserNotFoundResponseSchema,
   GetUserParamsSchema,
@@ -74,6 +75,14 @@ export const createUserRoute = createRoute({
       content: {
         "application/json": {
           schema: CreateUserResponseSchema,
+        },
+      },
+    },
+    422: {
+      description: "Invalid input",
+      content: {
+        "application/json": {
+          schema: CreateUserBadRequestResponseSchema,
         },
       },
     },
