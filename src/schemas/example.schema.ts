@@ -1,12 +1,26 @@
 import { z } from "@hono/zod-openapi";
 
 export const UserCreateSchema = z.object({
-  email: z.email(),
-  name: z.string().min(1),
+  email: z.email().openapi({
+    description: "The user's email address",
+    example: "user@example.com",
+  }),
+  name: z
+    .string()
+    .min(1)
+    .openapi({ description: "The user's name", example: "John Doe" }),
 });
 
 export const UserSchema = UserCreateSchema.extend({
-  id: z.uuid(),
+  id: z.uuid().openapi({
+    param: {
+      name: "id",
+      in: "path",
+      required: true,
+    },
+    description: "The user's unique identifier",
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  }),
 });
 
 export type User = z.infer<typeof UserSchema>;
