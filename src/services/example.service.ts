@@ -1,6 +1,6 @@
 import { type User, UserSchema } from "@/schemas/example.schema";
 
-// In-memory demo storage (you should prefer using a database)
+// TODO: In-memory demo storage, you should prefer using a database
 const users = new Map<string, User>();
 
 export function createUser(input: Omit<User, "id">): User {

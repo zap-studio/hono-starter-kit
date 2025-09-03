@@ -39,6 +39,12 @@ To sync types from your Worker configuration:
 bun run cf-typegen
 ```
 
+### 5. Adjust your settings
+
+Throughout the codebase, you'll find `TODO` comments.
+
+These indicate actions to be completed, such as adding environments to the Bindings type or replacing the demo in-memory storage with a database.
+
 ## Usage
 
 ### Type-safe API

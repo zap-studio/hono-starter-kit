@@ -16,7 +16,7 @@ export type Client = ReturnType<typeof hc<typeof routes>>;
  * @example
  * ```typescript
  * const client = hcWithType("https://api.example.com");
- * const response = await client.api.v1.users.$get(); // you may want to encapsulate 'client.api.v1' in a separate variable
+ * const response = await client.api.v1.users.$get(); // TODO: you may want to encapsulate 'client.api.v1' in a separate variable
  * ```
  */
 export function hcWithType(...args: Parameters<typeof hc>): Client {

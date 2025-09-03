@@ -9,7 +9,7 @@ const WINDOW_MS = 60_000; // 1 minute
 
 const MILLISECONDS_PER_SECOND = 1000;
 
-// In-memory store for rate limiting, in production use a distributed store like Redis
+// TODO: In-memory store for rate limiting, in production use a distributed store like Redis
 const buckets = new Map<string, { tokens: number; last: number }>();
 
 /**
