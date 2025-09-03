@@ -1,10 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { app } from "@/index";
 import { HttpStatus } from "@/zap/utils/http";
+import { mockEnv } from "./utils";
 
-const MOCK_ENV = {
-  CORS_ORIGINS: ["http://localhost:3000"],
-};
+const MOCK_ENV = mockEnv();
 
 describe("Example", () => {
   test("GET /api/v1/health", async () => {
