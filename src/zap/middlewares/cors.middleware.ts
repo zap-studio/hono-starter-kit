@@ -38,7 +38,12 @@ export function customCors(): MiddlewareHandler {
     return cors({
       origin,
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
+      allowHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Request-Id",
+        "X-Requested-With",
+      ],
       exposeHeaders: ["X-Request-Id"],
       maxAge: CORS_MAX_AGE_SECONDS,
       credentials,
