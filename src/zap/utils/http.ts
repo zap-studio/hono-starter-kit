@@ -22,8 +22,8 @@ export const HttpStatus = {
   CONFLICT: 409,
   /** UNPROCESSABLE_ENTITY: The request was well-formed but could not be followed due to semantic errors. */
   UNPROCESSABLE_ENTITY: 422,
-  /** RATE_LIMITED: The user has sent too many requests in a given amount of time. */
-  RATE_LIMITED: 429,
+  /** TOO_MANY_REQUESTS: The user has sent too many requests in a given amount of time. */
+  TOO_MANY_REQUESTS: 429,
   /** INTERNAL_SERVER_ERROR: An unexpected error occurred on the server. */
   INTERNAL_SERVER_ERROR: 500,
 } as const;

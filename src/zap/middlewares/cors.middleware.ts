@@ -1,3 +1,4 @@
+import type { MiddlewareHandler } from "hono";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import type { Bindings } from "@/lib/env";
@@ -6,8 +7,12 @@ import { parseOrigins } from "../utils/parsing";
 const CORS_MAX_AGE_SECONDS = 600;
 export const CORS_DEFAULT_ORIGIN = "*";
 
-export const customCors = () =>
-  createMiddleware<{ Bindings: Bindings }>((c, next) => {
+/**
+ * Custom CORS middleware
+ * @returns {MiddlewareHandler}
+ */
+export function customCors(): MiddlewareHandler {
+  return createMiddleware<{ Bindings: Bindings }>((c, next) => {
     const rawOrigins = parseOrigins(c.env.CORS_ORIGINS);
 
     // Normalize, trim, remove empty and duplicates
@@ -39,3 +44,4 @@ export const customCors = () =>
       credentials,
     })(c, next);
   });
+}

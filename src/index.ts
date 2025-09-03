@@ -16,7 +16,8 @@ import {
 import { exampleRouter } from "@/routers/example.router";
 import { healthRouter } from "@/routers/health.router";
 import { scalarRouter } from "@/routers/scalar.router";
-import { customCors } from "@/zap/middlewares/custom-cors.middleware";
+import { customCors } from "@/zap/middlewares/cors.middleware";
+import { customRateLimit } from "@/zap/middlewares/rate-limit.middleware";
 import type { Env } from "@/zap/utils/env";
 import { HttpStatus } from "@/zap/utils/http";
 import { sendError } from "@/zap/utils/response";
@@ -39,6 +40,7 @@ api.use(secureHeaders());
 api.use(requestId());
 api.use(logger());
 api.use(customCors());
+api.use(customRateLimit());
 
 if (process.env.NODE_ENV === "development") {
   api.use(prettyJSON());
