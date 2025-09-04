@@ -59,12 +59,17 @@ api.use(
   rateLimiter({
     windowMs: RATE_LIMIT_WINDOW_MS,
     limit: RATE_LIMIT_LIMIT,
-    keyGenerator: (c: Context) =>
-      c.req.header("x-forwarded-for") ??
-      c.req.header("cf-connecting-ip") ??
-      c.req.header("x-real-ip") ??
-      c.req.header("host") ??
-      "anonymous",
+    keyGenerator: (c: Context) => {
+      const cf = c.req.header("cf-connecting-ip");
+      const xff = c.req.header("x-forwarded-for");
+      const xri = c.req.header("x-real-ip");
+      const ip =
+        cf ??
+        (xff ? xff.split(",")[0]?.trim() : undefined) ??
+        xri ??
+        undefined;
+      return ip || `anon:${c.get("requestId")}`;
+    },
     skipSuccessfulRequests: false,
     skipFailedRequests: false,
   })
