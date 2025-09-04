@@ -12,6 +12,41 @@ export const UserCreateSchema = z.object({
   }),
 });
 
+export const UserQuerySchema = z.object({
+  page: z
+    .string()
+    .regex(/^[1-9]\d*$/)
+    .optional()
+    .openapi({
+      description: "Page number (positive integer as string)",
+      example: "1",
+    }),
+  limit: z
+    .string()
+    .regex(/^[1-9]\d*$/)
+    .optional()
+    .openapi({
+      description: "Items per page (positive integer as string)",
+      example: "10",
+    }),
+  q: z.string().optional().openapi({
+    description: "Filter query",
+    example: "john",
+  }),
+});
+
+export const UserParamsSchema = z.object({
+  id: z.uuid().openapi({
+    param: {
+      name: "id",
+      in: "path",
+      required: true,
+    },
+    description: "User ID (UUID)",
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  }),
+});
+
 // Full user schema with ID
 export const UserSchema = UserCreateSchema.extend({
   id: z.uuid().openapi({

@@ -1,5 +1,10 @@
 import { createRoute } from "@hono/zod-openapi";
-import { UserCreateSchema, UserSchema } from "@/schemas/example.schema";
+import {
+  UserCreateSchema,
+  UserParamsSchema,
+  UserQuerySchema,
+  UserSchema,
+} from "@/schemas/example.schema";
 import {
   errorWithMessage,
   successWithData,
@@ -11,7 +16,7 @@ export const listUsersRoute = createRoute({
   method: "get",
   path: "/",
   request: {
-    query: ListUsersQuerySchema,
+    query: UserQuerySchema,
   },
   responses: {
     200: {
@@ -30,7 +35,7 @@ export const getUserRoute = createRoute({
   method: "get",
   path: "/{id}",
   request: {
-    params: GetUserParamsSchema,
+    params: UserParamsSchema,
   },
   responses: {
     200: {
