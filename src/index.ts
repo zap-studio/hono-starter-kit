@@ -6,7 +6,9 @@ import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 import {
+  AUTH_PATH,
   BASE_PATH,
+  GLOB_AUTH_PATH,
   HEALTH_ROUTE,
   LLMS_TXT_ROUTE,
   OPENAPI_DOC_ROUTE,
@@ -26,6 +28,7 @@ import type { Env } from "@/zap/utils/env";
 import { HttpStatus } from "@/zap/utils/http";
 import { sendError } from "@/zap/utils/response";
 import { formatZodErrors } from "@/zap/utils/zod";
+import { customBearer } from "./zap/middlewares/bearer.middleware";
 
 export const app = new OpenAPIHono<Env>({
   defaultHook: (result, c) => {
@@ -38,6 +41,7 @@ export const app = new OpenAPIHono<Env>({
 });
 
 export const api = app.basePath(BASE_PATH);
+export const authApi = api.basePath(AUTH_PATH);
 
 // core middlewares
 api.use(
@@ -50,6 +54,7 @@ api.use(requestId());
 api.use(logger());
 api.use(customCors());
 api.use(customRateLimit());
+api.use(GLOB_AUTH_PATH, customBearer());
 
 if (process.env.NODE_ENV === "development") {
   api.use(prettyJSON());
