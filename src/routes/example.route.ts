@@ -1,14 +1,10 @@
 import { createRoute } from "@hono/zod-openapi";
+import { UserCreateSchema, UserSchema } from "@/schemas/example.schema";
 import {
-  CreateUserBadRequestResponseSchema,
-  CreateUserResponseSchema,
-  GetUserNotFoundResponseSchema,
-  GetUserParamsSchema,
-  GetUserResponseSchema,
-  ListUsersQuerySchema,
-  ListUsersResponseSchema,
-  UserCreateSchema,
-} from "@/schemas/example.schema";
+  errorWithMessage,
+  successWithData,
+  successWithPagination,
+} from "@/zap/utils/schemas";
 
 // List users (with pagination and filter)
 export const listUsersRoute = createRoute({
@@ -22,7 +18,7 @@ export const listUsersRoute = createRoute({
       description: "List all users with pagination and filter",
       content: {
         "application/json": {
-          schema: ListUsersResponseSchema,
+          schema: successWithPagination(UserSchema),
         },
       },
     },
@@ -41,7 +37,7 @@ export const getUserRoute = createRoute({
       description: "Get user by ID",
       content: {
         "application/json": {
-          schema: GetUserResponseSchema,
+          schema: successWithData(UserSchema),
         },
       },
     },
@@ -49,7 +45,7 @@ export const getUserRoute = createRoute({
       description: "User not found",
       content: {
         "application/json": {
-          schema: GetUserNotFoundResponseSchema,
+          schema: errorWithMessage("User not found", "User not found"),
         },
       },
     },
@@ -74,7 +70,7 @@ export const createUserRoute = createRoute({
       description: "User created",
       content: {
         "application/json": {
-          schema: CreateUserResponseSchema,
+          schema: successWithData(UserSchema),
         },
       },
     },
@@ -82,7 +78,7 @@ export const createUserRoute = createRoute({
       description: "Invalid input",
       content: {
         "application/json": {
-          schema: CreateUserBadRequestResponseSchema,
+          schema: errorWithMessage("Invalid input", "Invalid input"),
         },
       },
     },
