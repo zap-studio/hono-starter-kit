@@ -13,6 +13,10 @@ import {
   OPENAPI_VERSION,
   SCALAR_UI_ROUTE,
 } from "@/data/openapi";
+import {
+  contentSecurityPolicy,
+  permissionsPolicy,
+} from "@/data/secure-headers";
 import { exampleRouter } from "@/routers/example.router";
 import { healthRouter } from "@/routers/health.router";
 import { scalarRouter } from "@/routers/scalar.router";
@@ -36,7 +40,12 @@ export const app = new OpenAPIHono<Env>({
 export const api = app.basePath(BASE_PATH);
 
 // core middlewares
-api.use(secureHeaders());
+api.use(
+  secureHeaders({
+    permissionsPolicy,
+    contentSecurityPolicy,
+  })
+);
 api.use(requestId());
 api.use(logger());
 api.use(customCors());
