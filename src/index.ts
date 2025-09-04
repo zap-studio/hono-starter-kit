@@ -1,10 +1,12 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { createMarkdownFromOpenApi } from "@scalar/openapi-to-markdown";
+import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
+import { rateLimiter } from "hono-rate-limiter";
 import {
   AUTH_PATH,
   BASE_PATH,
@@ -15,6 +17,7 @@ import {
   SCALAR_UI_ROUTE,
 } from "@/data/base-path";
 import { API_NAME, API_VERSION, OPENAPI_VERSION } from "@/data/openapi";
+import { RATE_LIMIT_LIMIT, RATE_LIMIT_WINDOW_MS } from "@/data/rate-limiter";
 import {
   contentSecurityPolicy,
   permissionsPolicy,
@@ -23,7 +26,6 @@ import { exampleRouter } from "@/routers/example.router";
 import { healthRouter } from "@/routers/health.router";
 import { scalarRouter } from "@/routers/scalar.router";
 import { customCors } from "@/zap/middlewares/cors.middleware";
-import { customRateLimit } from "@/zap/middlewares/rate-limit.middleware";
 import type { Env } from "@/zap/utils/env";
 import { HttpStatus } from "@/zap/utils/http";
 import { sendError } from "@/zap/utils/response";
@@ -53,7 +55,20 @@ api.use(
 api.use(requestId());
 api.use(logger());
 api.use(customCors());
-api.use(customRateLimit());
+api.use(
+  rateLimiter({
+    windowMs: RATE_LIMIT_WINDOW_MS,
+    limit: RATE_LIMIT_LIMIT,
+    keyGenerator: (c: Context) =>
+      c.req.header("x-forwarded-for") ??
+      c.req.header("cf-connecting-ip") ??
+      c.req.header("x-real-ip") ??
+      c.req.header("host") ??
+      "anonymous",
+    skipSuccessfulRequests: false,
+    skipFailedRequests: false,
+  })
+);
 api.use(GLOB_AUTH_PATH, customBearer());
 
 if (process.env.NODE_ENV === "development") {
