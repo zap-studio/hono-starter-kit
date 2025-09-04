@@ -1,19 +1,29 @@
-import { createRoute, z } from '@hono/zod-openapi';
-import { UserCreateSchema, UserSchema } from '@/schemas/example.schema';
+import { createRoute } from "@hono/zod-openapi";
+import {
+  UserCreateSchema,
+  UserParamsSchema,
+  UserQuerySchema,
+  UserSchema,
+} from "@/schemas/example.schema";
+import {
+  errorWithMessage,
+  successWithData,
+  successWithPagination,
+} from "@/zap/utils/schemas";
 
-// List users
+// List users (with pagination and filter)
 export const listUsersRoute = createRoute({
-  method: 'get',
-  path: '/users',
+  method: "get",
+  path: "/",
+  request: {
+    query: UserQuerySchema,
+  },
   responses: {
     200: {
-      description: 'List all users',
+      description: "List all users with pagination and filter",
       content: {
-        'application/json': {
-          schema: z.object({
-            ok: z.literal(true),
-            data: z.array(UserSchema),
-          }),
+        "application/json": {
+          schema: successWithPagination(UserSchema),
         },
       },
     },
@@ -22,33 +32,25 @@ export const listUsersRoute = createRoute({
 
 // Get user by ID
 export const getUserRoute = createRoute({
-  method: 'get',
-  path: '/users/{id}',
+  method: "get",
+  path: "/{id}",
   request: {
-    params: z.object({
-      id: z.uuid(),
-    }),
+    params: UserParamsSchema,
   },
   responses: {
     200: {
-      description: 'Get user by ID',
+      description: "Get user by ID",
       content: {
-        'application/json': {
-          schema: z.object({
-            ok: z.literal(true),
-            data: UserSchema,
-          }),
+        "application/json": {
+          schema: successWithData(UserSchema),
         },
       },
     },
     404: {
-      description: 'User not found',
+      description: "User not found",
       content: {
-        'application/json': {
-          schema: z.object({
-            ok: z.literal(false),
-            error: z.string(),
-          }),
+        "application/json": {
+          schema: errorWithMessage("User not found", "User not found"),
         },
       },
     },
@@ -57,12 +59,12 @@ export const getUserRoute = createRoute({
 
 // Create user
 export const createUserRoute = createRoute({
-  method: 'post',
-  path: '/users',
+  method: "post",
+  path: "/",
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: UserCreateSchema,
         },
       },
@@ -70,24 +72,18 @@ export const createUserRoute = createRoute({
   },
   responses: {
     201: {
-      description: 'User created',
+      description: "User created",
       content: {
-        'application/json': {
-          schema: z.object({
-            ok: z.literal(true),
-            data: UserSchema,
-          }),
+        "application/json": {
+          schema: successWithData(UserSchema),
         },
       },
     },
-    400: {
-      description: 'Invalid input',
+    422: {
+      description: "Invalid input",
       content: {
-        'application/json': {
-          schema: z.object({
-            ok: z.literal(false),
-            error: z.string(),
-          }),
+        "application/json": {
+          schema: errorWithMessage("Invalid input", "Invalid input"),
         },
       },
     },

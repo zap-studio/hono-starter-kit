@@ -2,13 +2,17 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "hono-starter-kit",
 	"main": "src/index.ts",
-	"compatibility_date": "2025-09-01",
+	"compatibility_date": "2025-08-29",
 	"compatibility_flags": [
 	   "nodejs_compat"
 	],
-	// "vars": {
-	//   "MY_VAR": "my-variable"
-	// },
+	"dev": {
+		"port": 3000,
+		"local_protocol": "http"
+	},
+	"vars": {
+		"CORS_ORIGINS": "http://localhost:5173,http://localhost:3000,http://localhost:8000"
+	},
 	// "kv_namespaces": [
 	//   {
 	//     "binding": "MY_KV_NAMESPACE",

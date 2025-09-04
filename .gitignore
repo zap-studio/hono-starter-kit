@@ -35,5 +35,8 @@ fyai.txt
 # todo
 todo.json
 
+# cloudflare types
+worker-configuration.d.ts
+
 # misc
 .DS_Store

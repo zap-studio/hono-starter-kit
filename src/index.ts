@@ -1,78 +1,132 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
-import { prettyJSON } from 'hono/pretty-json';
-import type { Bindings } from '@/lib/env';
-import { HttpStatus, toAppError } from '@/lib/errors';
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { createMarkdownFromOpenApi } from "@scalar/openapi-to-markdown";
+import type { Context } from "hono";
+import { HTTPException } from "hono/http-exception";
+import { logger } from "hono/logger";
+import { prettyJSON } from "hono/pretty-json";
+import { requestId } from "hono/request-id";
+import { secureHeaders } from "hono/secure-headers";
+import { rateLimiter } from "hono-rate-limiter";
 import {
-  createUserRoute,
-  getUserRoute,
-  listUsersRoute,
-} from '@/routes/example.route';
-import { health } from '@/routes/health.route';
-import { sendError } from '@/utils/response';
-import { createUser, getUser, listUsers } from './services/example.service';
+  AUTH_PATH,
+  BASE_PATH,
+  GLOB_AUTH_PATH,
+  HEALTH_ROUTE,
+  LLMS_TXT_ROUTE,
+  OPENAPI_DOC_ROUTE,
+  SCALAR_UI_ROUTE,
+} from "@/data/base-path";
+import { API_NAME, API_VERSION, OPENAPI_VERSION } from "@/data/openapi";
+import { RATE_LIMIT_LIMIT, RATE_LIMIT_WINDOW_MS } from "@/data/rate-limiter";
+import {
+  contentSecurityPolicy,
+  permissionsPolicy,
+} from "@/data/secure-headers";
+import { exampleRouter } from "@/routers/example.router";
+import { healthRouter } from "@/routers/health.router";
+import { scalarRouter } from "@/routers/scalar.router";
+import { customCors } from "@/zap/middlewares/cors.middleware";
+import type { Env } from "@/zap/utils/env";
+import { HttpStatus } from "@/zap/utils/http";
+import { sendError } from "@/zap/utils/response";
+import { formatZodErrors } from "@/zap/utils/zod";
+import { customBearer } from "./zap/middlewares/bearer.middleware";
 
-export const app = new OpenAPIHono<{ Bindings: Bindings }>();
-
-// core middleware
-app.use(prettyJSON());
-// TODO: to implement: logging, rate limiting, cors, request id, etc.
-
-// routes
-app.openapi(health, (c) => {
-  return c.json(
-    {
-      ok: true,
-      data: { status: 'ok', timestamp: Date.now() },
-    },
-    HttpStatus.OK
-  );
-});
-
-app.openapi(listUsersRoute, (c) => {
-  return c.json({ ok: true, data: listUsers() }, HttpStatus.OK);
-});
-
-app.openapi(getUserRoute, (c) => {
-  const { id } = c.req.valid('param');
-  const user = getUser(id);
-  if (!user) {
-    return c.json({ ok: false, error: 'User not found' }, HttpStatus.NOT_FOUND);
-  }
-  return c.json({ ok: true, data: user }, HttpStatus.OK);
-});
-
-app.openapi(createUserRoute, (c) => {
-  const input = c.req.valid('json');
-  try {
-    const user = createUser(input);
-    return c.json({ ok: true, data: user }, HttpStatus.CREATED);
-  } catch (error) {
-    return c.json(
-      { ok: false, error: (error as Error).message },
-      HttpStatus.BAD_REQUEST
-    );
-  }
-});
-
-// OpenAPI documentation
-app.doc('/doc', {
-  openapi: '3.0.0',
-  info: {
-    version: '1.0.0',
-    title: 'My API',
+export const app = new OpenAPIHono<Env>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return sendError(c, "Validation Error", HttpStatus.UNPROCESSABLE_ENTITY, {
+        errors: formatZodErrors(result),
+      });
+    }
   },
 });
 
+export const api = app.basePath(BASE_PATH);
+export const authApi = api.basePath(AUTH_PATH);
+
+// core middlewares
+api.use(
+  secureHeaders({
+    permissionsPolicy,
+    contentSecurityPolicy,
+  })
+);
+api.use(requestId());
+api.use(logger());
+api.use(customCors());
+api.use(
+  rateLimiter({
+    windowMs: RATE_LIMIT_WINDOW_MS,
+    limit: RATE_LIMIT_LIMIT,
+    keyGenerator: (c: Context) => {
+      const cf = c.req.header("cf-connecting-ip");
+      const xff = c.req.header("x-forwarded-for");
+      const xri = c.req.header("x-real-ip");
+      const ip =
+        cf ??
+        (xff ? xff.split(",")[0]?.trim() : undefined) ??
+        xri ??
+        undefined;
+      return ip || `anon:${c.get("requestId")}`;
+    },
+    skipSuccessfulRequests: false,
+    skipFailedRequests: false,
+  })
+);
+api.use(GLOB_AUTH_PATH, customBearer());
+
+if (process.env.NODE_ENV === "development") {
+  api.use(prettyJSON());
+}
+
+// API routes
+export const routes = api
+  .route(HEALTH_ROUTE, healthRouter)
+  .route(SCALAR_UI_ROUTE, scalarRouter)
+  .route("/users", exampleRouter);
+
+// OpenAPI documentation
+api.doc(OPENAPI_DOC_ROUTE, {
+  openapi: OPENAPI_VERSION,
+  info: {
+    title: API_NAME,
+    version: API_VERSION,
+  },
+});
+
+// llms.txt
+const content = api.getOpenAPI31Document({
+  openapi: OPENAPI_VERSION,
+  info: { title: API_NAME, version: API_VERSION },
+});
+
+const markdown = await createMarkdownFromOpenApi(JSON.stringify(content));
+
+api.get(LLMS_TXT_ROUTE, (c) => {
+  return c.text(markdown);
+});
+
 // not found
-app.notFound((c) => {
-  return sendError(c, toAppError(new Error('Not Found')));
+api.notFound((c) => {
+  return sendError(c, "Not Found", HttpStatus.NOT_FOUND);
 });
 
 // global error handler
-app.onError((err, c) => {
-  const e = toAppError(err);
-  return sendError(c, e);
+api.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+
+  // biome-ignore lint/suspicious/noConsole: log the error server-side with requestId
+  console.error({ requestId: c.get("requestId"), err }, "Unhandled error");
+
+  return sendError(
+    c,
+    "Internal Server Error",
+    HttpStatus.INTERNAL_SERVER_ERROR,
+    { requestId: c.get("requestId") }
+  );
 });
 
-export type App = typeof app;
 export default app;

@@ -1,15 +1,16 @@
-import { createRoute } from '@hono/zod-openapi';
-import { HealthResponseSchema } from '@/schemas/health.schema';
+import { createRoute } from "@hono/zod-openapi";
+import { HealthDataSchema } from "@/schemas/health.schema";
+import { successWithData } from "@/zap/utils/schemas";
 
 export const health = createRoute({
-  method: 'get',
-  path: '/health',
+  method: "get",
+  path: "/",
   responses: {
     200: {
-      description: 'Healthcheck',
+      description: "Healthcheck",
       content: {
-        'application/json': {
-          schema: HealthResponseSchema,
+        "application/json": {
+          schema: successWithData(HealthDataSchema),
         },
       },
     },
