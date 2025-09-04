@@ -5,14 +5,14 @@ import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
-import { BASE_PATH } from "@/data/base-path";
 import {
-  API_NAME,
-  API_VERSION,
+  BASE_PATH,
+  HEALTH_ROUTE,
+  LLMS_TXT_ROUTE,
   OPENAPI_DOC_ROUTE,
-  OPENAPI_VERSION,
   SCALAR_UI_ROUTE,
-} from "@/data/openapi";
+} from "@/data/base-path";
+import { API_NAME, API_VERSION, OPENAPI_VERSION } from "@/data/openapi";
 import {
   contentSecurityPolicy,
   permissionsPolicy,
@@ -57,7 +57,7 @@ if (process.env.NODE_ENV === "development") {
 
 // API routes
 export const routes = api
-  .route("/health", healthRouter)
+  .route(HEALTH_ROUTE, healthRouter)
   .route(SCALAR_UI_ROUTE, scalarRouter)
   .route("/users", exampleRouter);
 
@@ -78,7 +78,7 @@ const content = api.getOpenAPI31Document({
 
 const markdown = await createMarkdownFromOpenApi(JSON.stringify(content));
 
-api.get("/llms.txt", (c) => {
+api.get(LLMS_TXT_ROUTE, (c) => {
   return c.text(markdown);
 });
 
